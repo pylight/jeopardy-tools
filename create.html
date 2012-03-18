@@ -1,0 +1,254 @@
+<!DOCTYPE html >
+<html>
+
+<head>
+	<title>Jeopardy Webpreview - Create new Round</title>
+	<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.1/jquery.min.js"></script>
+	<script type="text/javascript" src="js/zclip/jquery.zclip.js"></script>
+	<script type="text/javascript" src="js/watch.js"></script>
+	
+	
+	<link rel="stylesheet" type="text/css" href="css/bootstrap.css" />		
+</head>
+
+<body>
+    <div class="navbar navbar-fixed-top">
+      <div class="navbar-inner">
+        <div class="container">
+
+          <a class="brand" href="#">Jeopardy Webpreview</a>
+
+            <ul class="nav" style="float:right">
+            	<li class="active"><a href="http://creativecommons.org/licenses/by-nc-sa/2.0/de/">2012 // CC BY NC SA</a></li>
+            </ul>
+        </div>
+      </div>
+    </div>
+
+	<div class="container" style="margin-top: 45px">
+
+
+    <div class="container-fluid">
+    <div class="row-fluid">
+    <div class="span2">
+    <!--Sidebar content-->
+    <div style="padding: 8px 0;" class="well">
+		  <ul class="nav nav-list">
+		  <li class="nav-header">
+			  Navigation
+		  </li>
+		  <li>
+		  	<a href="index.html"><i class="icon-home"></i> Home</a>
+		  </li>
+		  <li class="active">
+			<a href="create.html"><i class="icon-pencil"></i> Create</a>
+		  </li>
+		  <li>
+		  	<a href="javascript:void(0);" title="Please choose a file in the overview." id="lib"><i class="icon-book"></i> Library</a>  	
+		  </li>
+		  <li><a href="https://github.com/pylight/pylight.github.com/tree/master/jeopardy-preview" target="_blank"><i class="icon-star"></i> Github</a></li>
+		  </ul>
+		</div>    
+    </div>
+    
+    <div id="content" class="span10">
+	<!-- website content -->
+	<h2>Create a new Jeopardy-Round. Do it already!!!</h2>
+
+	Please fill out the fields below. Comments are <i>optional</i> and will not be displayed in the game (sneaky trick for solutions).<br />
+	If you want to add a new category, click on the "moar cats"-button below.
+
+	<div>
+	<span class="label">Roundfile name:</span> <input id="roundfileName" class="input-mini" value="1"/>.jrf <span style="font-size: 10px; color: #ccc;">(influences folder name for images)</span>
+	</div>
+	<br/>
+	
+	<hr />
+	<div id="formArea"></div>
+	<a class="btn" href="javascript:void(0)" id="morebutton">moar cats</a>
+	
+	<hr />
+	
+	<h3>Your Roundfile:</h3>
+	<!-- output code goes here -->	
+	<pre id="preArea"></pre>
+	
+	<button class="btn btn-success" id="clipboardButton"><i class="icon-file"></i> Copy to clipboard</button>
+	
+	
+	<script type="text/javascript">
+	$(document).ready(function(){
+		
+		var curCat = 0;
+		
+		function appendCat(catNumber)
+		{
+				var htmlCode = '<div class="category">';	
+				var preCode = "";	
+				
+				for (i = 0; i <= 500; i+=100)
+				{
+					if (i == 0)
+					{
+						htmlCode += '<input type="text" placeholder="Category name #' + catNumber + '" name="' + catNumber + '_name" style="width: 635px;" /><br />';
+						preCode += '<span id="' + catNumber + '_name-out"></span>\n';
+					}
+					else
+					{
+						// input names/selectors
+						var qName = catNumber + '_' + i;
+						var qOutSelector = '#' + qName + '-out';
+						var cName = qName + '_comment';
+						var cOutSelector = '#' + cName + '-out';
+						var curSuffix = catNumber + '_' + i;
+						
+						htmlCode += '<span class="input-append" style="float:left; margin-right: 10px;"><input type="text" style="width: 250px;" class="span2 questionInput" id="prependedAppendedInput" placeholder="question #' + i + '" name="' + qName + '" /><span class="add-on"><input class="imgbox" type="checkbox" id="imgbox_' + curSuffix + '" />img</span><span class="add-on"><input class="djbox" type="checkbox" id="djbox_' + curSuffix + '" /> dj  </span> </span> <input placeholder="comment #' + i +'" style="width: 250px;" class="commentinput input disabled" type="text" placeholder="comment #' + i +'" name="' + cName + '" /> <i class="icon-ok okayinfo" id="okayinfo_' + curSuffix + '" style="display: none;"></i> <div class="break_' + curSuffix + '" style="clear:both;"></div>';					
+						
+						preCode += i + ': <span id="' + catNumber + '_' + i + '-out"></span> <span class="comment" id="' + catNumber + '_' + i + '_comment-out"></span>\n';
+					}
+				}			
+			
+				htmlCode += '</div>';
+			
+				$("#formArea").append(htmlCode);
+				$("#preArea").append(preCode);
+				return 0;
+		}
+		
+		// add watch relations (real time output in pre area)
+		function addWatch(catId)
+		{
+			$('input[name^=' + catId + ']').each(function(index) {
+				var outid = '#' + $(this).attr('name') + '-out';
+				watch.add($(this).attr('name'), function(value) { $(outid).text(value); });
+			});
+		}			  
+		
+
+		function checkImage(e){
+			var roundNumber = $('#roundfileName').val();
+			var ids = $(e).attr("name");
+			var input = $(e).val();
+			
+			if (!input || input == "")
+				return;
+
+			var imgUrl = 'answers/' + roundNumber + '/' +  input;
+		
+				if ( $('#imgbox_' + ids).attr("checked") && urlExists(imgUrl))
+				{
+					if($('#preview_' + ids).length == 0)
+					{
+						$('#okayinfo_' + ids).show();
+						
+						var imageCode = '<img id="preview_'+ ids + '" style="margin-right: 10px; float: left; max-heigth: 100px; max-width: 100px;" src="' + imgUrl + '" alt="" border="0" />';
+						
+						$('.questionInput[name=' + ids + ']').before(imageCode);
+					}
+				}
+				else
+				{
+					$('#okayinfo_' + ids).hide();
+					$('#preview_' + ids).remove();
+				}
+		}
+
+		function djBind(){
+		$('.djbox').unbind('click.boxEvent');
+		$('.djbox').bind('click.boxEvent', function(){
+			
+			var boxId = $(this).attr('id');
+			var idList = boxId.split('_');
+			var entryId = idList[1] + '_' + idList[2] + '-out';
+			var boxAddId = entryId + '-added';
+			var imgBoxId = 'img' + entryId + '-added';
+
+			
+			if ($(this).attr('checked')){				
+				if ($('#' + imgBoxId).length > 0)
+					entryId = imgBoxId;
+				$('#' + entryId).before('<span id="' + boxAddId + '">[dj] </span>');
+			}
+			else
+				$('#' + boxAddId).remove();
+
+		});
+	  }
+	  
+	  function imgBind(){
+		$('.imgbox').unbind('click.imgBoxEvent');
+		$('.imgbox').bind('click.imgBoxEvent', function(){
+			
+			var boxId = $(this).attr('id');
+			var idList = boxId.split('_');
+			var entryId = idList[1] + '_' + idList[2] + '-out';
+			var boxAddId = 'img' + entryId + '-added';
+			
+			if ($(this).attr('checked'))
+				$('#' + entryId).before('<span id="' + boxAddId + '">[img]</span>');
+			else
+				$('#' + boxAddId).remove();
+
+			var element = '.questionInput[name=' + idList[1] + '_' + idList[2] + ']';
+			checkImage(element);
+		});
+	  }
+
+	  function createCat()
+	  {
+		  	curCat++;
+			appendCat(curCat);	
+			addWatch(curCat);
+			djBind();
+			imgBind();
+	  }
+
+	
+	$('#morebutton').click(function(){
+		// because flash sucks, we have to remove the zclip-function before moving the button and add it again afterwards -.-
+		$('#clipboardButton').zclip('remove');
+		
+		createCat();
+
+		$('#clipboardButton').zclip({
+			path:'js/zclip/ZeroClipboard.swf',
+			copy:function(){return $('#preArea').text();},
+		});
+
+	});	
+		
+	// check if an image exists in the answers/<roundnumber>/ directory
+	function urlExists(url)
+	{
+		var http = new XMLHttpRequest();
+		http.open('HEAD', url, false);
+		http.send();
+		return http.status!=404;
+	}
+
+	
+	// let's create the first category
+	createCat();
+  
+	
+	// function behind clipboard button
+	$('#clipboardButton').zclip({
+		path:'js/zclip/ZeroClipboard.swf',
+		copy:function(){return $('#preArea').text();},
+	});
+
+
+
+	$('.questionInput').focusout(function(){
+		checkImage(this);
+	});
+	
+		
+	});
+	</script>
+	
+	
+</body>
+
+</html>
+

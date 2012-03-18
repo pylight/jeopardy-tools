@@ -1,0 +1,278 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+	<title>Jeopardy Webpreview</title>
+	<link href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/themes/base/jquery-ui.css" rel="stylesheet" type="text/css"/>
+	<link rel="stylesheet" type="text/css" href="css/bootstrap.css" />	
+</head>
+
+<body>
+    <div class="navbar navbar-fixed-top">
+      <div class="navbar-inner">
+        <div class="container">
+
+          <a class="brand" href="#">Jeopardy Webpreview</a>
+
+            <ul class="nav" style="float:right">
+            	<li class="active"><a href="http://creativecommons.org/licenses/by-nc-sa/2.0/de/">2012 // CC BY NC SA</a></li>
+            </ul>
+        </div>
+      </div>
+    </div>
+
+<div class="container" style="margin-top: 45px">
+
+
+    <div class="container-fluid">
+    <div class="row-fluid">
+    <div class="span2">
+    <!--Sidebar content-->
+    <div style="padding: 8px 0;" class="well">
+		  <ul class="nav nav-list">
+		  <li class="nav-header">
+			  Navigation
+		  </li>
+		  <li>
+		  	<a href="index.html"><i class="icon-home"></i> Home</a>
+		  </li>
+		  <li>
+			<a href="create.html"><i class="icon-pencil"></i> Create</a>
+		  </li>
+		  <li class="active">
+		  	<a href="#"><i class="icon-book"></i> Library</a>
+		  	</li>
+		  	<li><a href="https://github.com/pylight/pylight.github.com/tree/master/jeopardy-preview" target="_blank"><i class="icon-star"></i> Github</a></li>
+		</ul>
+		</div>    
+    </div>
+    
+
+    <div id="content" class="span10">
+		<!-- website content -->
+		<h1>Roundfile preview</h1>
+    
+    </div>
+    </div>
+    </div>
+</div>
+
+		<!-- javascript libs -->
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+		<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.18/jquery-ui.min.js"></script>
+		<script src="js/bootstrap.js"></script>
+		<script src="js/shadowbox/shadowbox.js"></script>
+		<link rel="stylesheet" type="text/css" href="js/shadowbox/shadowbox.css">
+		
+		<script>				
+		$(document).ready(function() {										
+			/* display an errormessage on the website 
+			   if something went wrong */
+			function error(message)
+			{
+				$("#content").html("<h1>Error! Oh noes... :[</h1>" + '<div class="alert alert-error">' + message + '</div>');
+				return false;
+			}
+			
+			/* parse one element in a category:
+			   insert img/video/sound and highlight dj-fields */
+			function parse(s){
+				var djField = false;
+														
+				if (s.indexOf("[dj]") != -1) {
+					s = s.replace("[dj]","");
+					djField = true;
+				}
+				
+				// remove comments and number-prefix
+				var commentRegex = new RegExp("##.+##", "g");
+				var comment = s.match(commentRegex, "");
+				s = s.replace(commentRegex,"").substring(5);	
+				
+				if (s.indexOf("[img]") != -1) 			// image field
+				{
+					s = s.replace("[img]","").replace(/^\s+|\s+$/g, '');
+					var fileName = s.replace(/^.*[\\\/]/, '');
+					imagePath = folderPath + '/' +  s;
+										
+					s = '<a rel="shadowbox" href="' + imagePath + '"><img style="max-height: 150px; max-width: 150px;" src="' + imagePath + '" alt="" border="0" /></a>';	
+										
+					fileInfo = '<span style="position: absolute; float: left;"><i class="icon-file fileNameInfo"></i> <span class="fileName">' + fileName + '</span></span>';
+					s += fileInfo;				
+				}
+				else if (s.indexOf("[video]") != -1)	// video field
+				{
+					s = s.replace("[video]","").replace(/^\s+|\s+$/g, '');
+					var fileName = s.replace(/^.*[\\\/]/, '');
+					moviePath = folderPath + '/' + s;
+					type = s.split(".")[1];
+					s = '<video width="320" height="240" controls="controls"><source src="' + moviePath + '" type="video/'+ type+'" />[videofile - Your browser doesn\'t support the HTML video player.]</video>';				
+					
+					fileInfo = '<span style="position: absolute; float: left;"><i class="icon-file fileNameInfo"></i> <span class="fileName">' + fileName + '</span></span>';
+					s += fileInfo;				
+				}
+				else if (s.indexOf("[sound]") != -1)	// sound field
+				{
+					s = s.replace("[sound]","").replace(/^\s+|\s+$/g, '');
+					var fileName = s.replace(/^.*[\\\/]/, '');
+					audioPath = folderPath + '/' + s;
+					type = s.split(".")[1];
+					s = '<audio controls="controls"><source src="' + audioPath + '" type="audio/' + type + '" />[soundfile - Your browser doesn\'t support the HTML audio player.]</audio>';				
+					
+					fileInfo = '<span style="position: absolute; float: left;"><i class="icon-file fileNameInfo"></i> <span class="fileName">' + fileName + '</span></span>';
+					s += fileInfo;				
+				}
+				
+				// additional tags: [l], [b], [nE] 
+				s = s.replace('[l]','');
+				s = s.replace('[b]','<br />');
+				// [nE] -> escape
+				if (s.search(/\[nE\].+/g) != -1)
+				{
+					s = s.replace('[nE]','');
+					s = $('<div />').text(s).html();
+				}
+				
+				// if needed, add an double jeopardy-infobutton
+				if (djField)
+					s += '<a style="float:right; margin-left: 15px;" href="javascript:void(0);" class="btn btn-warning">Double Jeopardy</a>';
+				
+								
+				// commentbutton
+				if (comment)
+				{
+					comment = comment.toString();
+					var end = comment.length - 2;
+					comment = comment.substring(2, end);
+					s += '<div style="text-align:right;"><a comment="'+ comment  +'" href="javascript:void(0);" class="btn commentButton"><i class="icon-comment"></i></a></div>';
+	
+					
+				}
+				
+				return s;
+			}
+			
+			// get the fileName and path from the address url */
+			var fileName = "";
+			var folderPath = "";
+			query = window.location.search.substring(1);
+			var vars = query.split("&");
+			
+			for (var i=0; i < vars.length; i++) {
+				var pair = vars[i].split("=");
+				
+				if (pair[0] == "file") {
+				  fileName = "answers/" + pair[1];
+				  folderPath = "answers/" + pair[1].split(".")[0];
+				}
+			} 
+			
+			if(fileName == "" ||  folderPath == "")
+			{
+					error("Please specify the roundfile.");
+					return 0;
+			}
+			
+			
+			// perform get request to fetch the roundfile information
+			$.get(fileName, function(data) {
+				var lines = data.split("\n");
+				
+				if (lines.length == 0)
+					error("Got no data.");
+				
+				// make an 2 dim array ([catNum][points])
+				roundData = new Array();
+				var pos = 0;			// the position in one category
+				var parentPos = 0;		// the category offset in the array
+				
+				for (var i = 0; i < lines.length; i++) 
+				{
+					if(lines[i] == "")
+						continue;
+					else if (lines[i].match(/^100:/) || lines[i].match(/^200:/) || lines[i].match(/^300:/) || lines[i].match(/^400:/) || lines[i].match(/^500:/))
+					{																		
+							// trimmed line will be our new array element
+							roundData[parentPos][pos] = lines[i].replace(/^\s+|\s+$/g, ''); 
+							pos++;
+					}
+					else
+					{	
+						// yeay, a new category! - create new array section
+						
+						// try to get array position
+						if (pos % 6){
+							curLine = i + 1;
+							error("While reading line " + curLine + ": Reading a new category heading but the predecessor category is not yet finished." + pos);
+							return 0;
+						}
+						
+						if(pos > 0)
+							parentPos++;
+						
+						roundData[parentPos] = new Array(5);
+						roundData[parentPos][0] = lines[i];
+						pos = 1;				
+					}
+				} 
+								
+				$("#content").append('<div class="alert alert-success"><strong>Success =)</strong> - I\'ve read '  + roundData.length + ' categories! <a class="close" data-dismiss="alert">x</a></div>');
+				
+				var curElement = "";
+				var cat = 0;
+				var output = "";
+				var outputHead = "<ul>";
+				
+				for (var i = 0; i < roundData.length; i++)
+				{
+					cat = i + 1;
+					outputHead += '<li><a href="#answers' + cat + '">' + roundData[i][0] + '</a></li>';
+											
+					output += '<div id="answers' + cat + '">';
+						for(m = 1; m < roundData[i].length; m++)
+						{
+							curElement = roundData[i][m];
+							var fileInfo = "";
+							curElement = parse(curElement);
+							var points = 100 * m;
+							
+							output += '<div class="bar"><i class="icon-fire"> </i> ' + points + '</div>';
+							output += '<div class="answer">' +  curElement + '</div>';
+						}	
+					output += '</div>';
+				}
+				outputHead += '</ul>';
+				
+				$("#content").append('<div id="tabs">' + outputHead + output + '</div>');
+				
+				// some eye candy
+				$("#tabs").tabs();
+				Shadowbox.init({handleOversize: "drag", modal: true});
+				
+				// some additional event handlers
+				$(".commentButton").click(function(){
+						
+						var data = $(this).attr("comment");
+						$('<div><i class="icon-info-sign"></i> <i>Secret info:</i><div style="margin: 5px 15px;">' + data + '</div></div>').dialog({title: "Comment", modal: true, resizable: false});
+				});				
+				$(".fileNameInfo").mouseenter(function(){
+						$(this).next(".fileName").show();
+				});
+				$(".fileNameInfo").mouseout(function(){
+						$(this).next(".fileName").hide();
+				});
+				
+				
+				}).error(function(a){
+						error("File not found or get request failed.");
+						return 0;
+					});
+
+				
+		});					
+		</script>
+		
+</body>
+
+</html>
+
