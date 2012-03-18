@@ -2,10 +2,11 @@
 <html>
 
 <head>
-	<title>Jeopardy Webpreview - Create new Round</title>
+	<title>Jeopardy Tools - Create a new Round</title>
 	<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.1/jquery.min.js"></script>
 	<script type="text/javascript" src="js/watch.js"></script>
-	
+	<script src="js/shadowbox/shadowbox.js"></script>
+	<link rel="stylesheet" type="text/css" href="js/shadowbox/shadowbox.css">
 	
 	<link rel="stylesheet" type="text/css" href="css/bootstrap.css" />		
 </head>
@@ -15,7 +16,7 @@
       <div class="navbar-inner">
         <div class="container">
 
-          <a class="brand" href="#">Jeopardy Webpreview</a>
+          <a class="brand" href="#">Jeopardy Tools</a>
 
             <ul class="nav" style="float:right">
             	<li class="active"><a href="http://creativecommons.org/licenses/by-nc-sa/2.0/de/">2012 // CC BY NC SA</a></li>
@@ -43,7 +44,7 @@
 			<a href="create.html"><i class="icon-pencil"></i> Create</a>
 		  </li>
 		  <li>
-		  	<a href="javascript:void(0);" title="Please choose a file in the overview." id="lib"><i class="icon-book"></i> Library</a>  	
+		  	<a href="library.html" id="lib"><i class="icon-book"></i> Library</a>  	
 		  </li>
 		  <li><a href="https://github.com/pylight/jeopardy-tools" target="_blank"><i class="icon-star"></i> Github</a></li>
 		  </ul>
@@ -72,10 +73,10 @@
 	<!-- output code goes here -->	
 	<pre id="preArea"></pre>
 	
-	
 	<script type="text/javascript">
 	$(document).ready(function(){
-		
+
+		Shadowbox.init({ skipSetup: true });
 		var curCat = 0;
 		
 		function appendCat(catNumber)
@@ -99,7 +100,7 @@
 						var cOutSelector = '#' + cName + '-out';
 						var curSuffix = catNumber + '_' + i;
 						
-						htmlCode += '<span class="input-append" style="float:left; margin-right: 10px;"><input type="text" style="width: 250px;" class="span2 questionInput" id="prependedAppendedInput" placeholder="question #' + i + '" name="' + qName + '" /><span class="add-on"><input class="imgbox" type="checkbox" id="imgbox_' + curSuffix + '" />img</span><span class="add-on"><input class="djbox" type="checkbox" id="djbox_' + curSuffix + '" /> dj  </span> </span> <input placeholder="comment #' + i +'" style="width: 250px;" class="commentinput input disabled" type="text" placeholder="comment #' + i +'" name="' + cName + '" /> <i class="icon-ok okayinfo" id="okayinfo_' + curSuffix + '" style="display: none;"></i> <div class="break_' + curSuffix + '" style="clear:both;"></div>';					
+						htmlCode += '<span class="input-append" style="float:left; margin-right: 10px;"><input type="text" style="width: 250px;" class="span2 questionInput" id="prependedAppendedInput" placeholder="question #' + i + '" name="' + qName + '" /><span class="add-on"><input class="imgbox" type="checkbox" id="imgbox_' + curSuffix + '" />img</span><span class="add-on"><input class="djbox" type="checkbox" id="djbox_' + curSuffix + '" /> dj  </span> </span> <input placeholder="comment #' + i +'" style="width: 250px;" class="commentinput input disabled" type="text" placeholder="comment #' + i +'" name="' + cName + '" /><div  style="clear:both;"></div>';					
 						
 						preCode += i + ': <span id="' + catNumber + '_' + i + '-out"></span> <span class="comment" id="' + catNumber + '_' + i + '_comment-out"></span>\n';
 					}
@@ -135,17 +136,16 @@
 				if ( $('#imgbox_' + ids).attr("checked") && urlExists(imgUrl))
 				{
 					if($('#preview_' + ids).length == 0)
-					{
-						$('#okayinfo_' + ids).show();
-						
-						var imageCode = '<img id="preview_'+ ids + '" style="margin-right: 10px; float: left; max-heigth: 100px; max-width: 100px;" src="' + imgUrl + '" alt="" border="0" />';
+					{				
+						var imageCode = '<a rel="shadowbox" href="'+ imgUrl +'" target="_blank"><img class="imgPreview" id="preview_'+ ids + '" style="margin-right: 10px; float: left; max-heigth: 100px; max-width: 100px;" src="' + imgUrl + '" alt="" border="0" /></a>';
 						
 						$('.questionInput[name=' + ids + ']').before(imageCode);
+												
+						Shadowbox.setup();
 					}
 				}
 				else
 				{
-					$('#okayinfo_' + ids).hide();
 					$('#preview_' + ids).remove();
 				}
 		}
@@ -219,9 +219,35 @@
 	createCat();
   
 	
+	
+	
+	// Add a timeout functionality and 
+	// check images after some time
+	var elapsedTime; 
+	var deadline = 2000;
+	var oldVal = "";
+	
 	$('.questionInput').keyup(function(){
-		checkImage(this);
+		var element = $(this);
+		if (element.val())
+			elapsedTime = setTimeout(function(){doneTyping(element)}, deadline);
+	});	
+
+	$('.questionInput').keydown(function(){
+		clearTimeout(elapsedTime);
 	});
+
+	function doneTyping(element) {
+		if(element.val() == oldVal)
+			return;
+		
+		oldVal = element.val();
+
+		// user finished typing for some time, 
+		// so we'll check if the image is valid
+		checkImage(element);
+	}
+	
 	
 		
 	});

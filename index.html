@@ -2,7 +2,7 @@
 <html>
 
 <head>
-	<title>Jeopardy Webpreview</title>
+	<title>Jeopardy Tools</title>
 	<link href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/themes/base/jquery-ui.css" rel="stylesheet" type="text/css"/>
 	<link rel="stylesheet" type="text/css" href="css/bootstrap.css" />	
 </head>
@@ -12,7 +12,7 @@
       <div class="navbar-inner">
         <div class="container">
 
-          <a class="brand" href="#">Jeopardy Webpreview</a>
+          <a class="brand" href="#">Jeopardy Tools</a>
 
             <ul class="nav" style="float:right">
             	<li class="active"><a href="http://creativecommons.org/licenses/by-nc-sa/2.0/de/">2012 // CC BY NC SA</a></li>
@@ -40,7 +40,7 @@
 			<a href="create.html"><i class="icon-pencil"></i> Create</a>
 		  </li>
 		  <li>
-		  	<a href="javascript:void(0);" title="Please choose a file in the overview." id="lib"><i class="icon-book"></i> Library</a>  	
+		  	<a href="library.html" id="lib"><i class="icon-book"></i> Library</a>  	
 		  </li>
 		  <li><a href="https://github.com/pylight/jeopardy-tools" target="_blank"><i class="icon-star"></i> Github</a></li>
 		  </ul>
@@ -50,27 +50,26 @@
     <div id="content" class="span10">
 		<!-- website content -->
 		
-		<ul class="nav nav-tabs">
+		<ul class="nav nav-tabs" style="margin-top: 10px;"> 
 		 <li class="active"><a href="#home" data-toggle="tab">Home</a></li>
-		<li><a href="#local" data-toggle="tab">Local Preview</a></li>
+		<li><a href="#local" data-toggle="tab">Local Usage</a></li>
 		<li><a href="#started" data-toggle="tab">Getting started</a></li>
 		<li><a href="#error" data-toggle="tab">Parsing errors</a></li>
 		</ul>
 		
 		<div class="tab-content">
-			<div class="tab-pane active" id="home">This site gives you a simple web-based preview of your <a href="https://github.com/chlange/jeopardy">jeopardy</a> round files. Select one of the tabs above if you need help.<small>(<a href="https://github.com/pylight/pylight.github.com/tree/master/jeopardy-preview">github-page</a>)</small></div>
-			<div class="tab-pane" id="local">You can download the repository from <a href="https://github.com/pylight/pylight.github.com/tree/master/jeopardy-preview">github</a> and use if locally. It works best with a webserver but you can also run <code>chromium --allow-file-access-from-files</code> if you have none. (requests from file:// are forbidden by default). You could also start a simple http-server with python: <code>python -m SimpleHTTPServer</code> or <code>python3 -m http.server</code>.</div>
-			<div class="tab-pane" id="started">If you want to see a preview of your roundfiles, just put the .jrf-file and the media-folder into the answers-directory and open the index.html in your webbrowser. The filename and the foldername should have an identical number and the Numbers in the answers directory should be ascending. </div>
-			<div class="tab-pane" id="error">If you get an error-message while parsing an roundfile, make sure that all categories in your roundfile have at least a title and the 5 lines for the scores. <br /><b>Minimum category example:</b> <blockquote>title<br/>100:<br/>200:<br/>300:<br/>400:</br>500:<br/></blockquote>If you get an unknown error or have trouble displaying your roundfiles correctly, <a href="https://github.com/pylight/pylight.github.com/issues/new">open an issue</a> on github.</div>
+			<div class="tab-pane active" id="home"><h2>Welcome Home!</h2>This site gives you a simple web-based preview of your <a href="https://github.com/chlange/jeopardy">jeopardy</a> round files. Select one of the tabs above if you need help.<br />
+			If you want to create a new roundfile right now or view existing round files, choose one of the navigation entries on the right.<br /><br />
+			
+			<h3>Clone me from github!</h3>
+			This tools are intended to run locally on your pc, so go get the project from <a href="https://github.com/pylight/jeopardy-tools">there</a>.
+			</div>
+			<div class="tab-pane" id="local"><h2>Local usage</h2>You can download the repository from <a href="https://github.com/pylight/jeopardy-tools">github</a> and use if locally. It works best with a webserver but you can also run <code>chromium --allow-file-access-from-files</code> if you have none. (requests from file:// are forbidden by default). You could also start a simple http-server with python: <code>python -m SimpleHTTPServer</code> or <code>python3 -m http.server</code>.</div>
+			<div class="tab-pane" id="started"><h2>How to get started</h2>If you want to see a preview of your roundfiles, just put the .jrf-file and the media-folder into the answers-directory and open the index.html in your webbrowser. The filename and the foldername should have an identical number and the Numbers in the answers directory should be ascending. </div>
+			<div class="tab-pane" id="error"><h2>Having trouble? :/</h2>If you get an error-message while parsing an roundfile, make sure that all categories in your roundfile have at least a title and the 5 lines for the scores. <br /><b>Minimum category example:</b> <blockquote>title<br/>100:<br/>200:<br/>300:<br/>400:</br>500:<br/></blockquote>If you get an unknown error or have trouble displaying your roundfiles correctly, <a href="https://github.com/pylight/jeopardy-tools/issues/new">open an issue</a> on github.</div>
 		</div>
 		
-   
-		<div class="alert alert-info" style="margin-top: 25px;"><h1>Overview</h1>
-			<span id="loadingInfo"><i>Getting Roundfiles...</i></span>
-			<ul class="roundFiles" style="list-style-type:none; margin: 0; padding: 0;"></ul>
-		</div>
-    
-		</div>
+   		</div>
     
     
 		</div>
@@ -89,68 +88,7 @@
 			
 			// init dokumentation tabs
 			$('.tabs a:last').tab('show');
-			
-			// sidebar: library link tooltip
-			$('#lib').tooltip({placement: 'right'});
-			
-			// check if the roundfile exists
-			function urlExists(url)
-			{
-				var http = new XMLHttpRequest();
-				http.open('HEAD', url, false);
-				http.send();
-				return http.status!=404;
-			}
-			
-			// returns a string containing all categories of a roundfile
-			// separated by commas
-			function getCategories(file){
-				var catInfos = "";
-				var catCount = 0;
-				var filePath = "answers/" + file;
-				
-				$.ajax({
-						url: filePath,
-						type: 'get',
-						dataType: 'html',
-						async: false,
-						success: function(data) {				
-				
-						var lines = data.split("\n");
-						
-						for (var i = 0; i < lines.length; i++)
-						{
-								if (lines[i] == "")
-									continue;
-							
-								if(! lines[i].substr(0, 1).match(/[0-9]/g)){
-									catCount++;
-									
-									if (catInfos != "")
-										catInfos += ', ';
-									
-										catInfos += '<a href="showFile.html?file=' + file + '#answers' + catCount + '">' + lines[i] + '</a>';							
-								}
-						}
-					}
-				});		
-				return catInfos;
-			}
-			
-			// check for availiable files
-			var fileCount = 0;
-			for (var i = 1; urlExists("answers/" + i + ".jrf"); i++)
-			{
-				catInfos = getCategories(i + ".jrf");
-				
-				$('.roundFiles').append('<li><a href="showFile.html?file=' + i + '.jrf' + '"><i class="icon-arrow-right"></i> ' + i + '.jrf</a> (' + catInfos + ')</li>');
-				fileCount++;
-			}
-			
-			if(fileCount)
-				$("#loadingInfo").html("Please choose a Roundfile:"); 
-			else
-				$("#loadingInfo").html("No files found. Please create roundfiles in a subfolder called 'answers'. The Roundfiles and media-folders must be numeric (e.g. an answers/1.jrf Roundfile and a answers/1 subfolder).");
+
 		});		
 		</script>
 		
