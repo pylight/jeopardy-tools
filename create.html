@@ -4,7 +4,6 @@
 <head>
 	<title>Jeopardy Webpreview - Create new Round</title>
 	<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.1/jquery.min.js"></script>
-	<script type="text/javascript" src="js/zclip/jquery.zclip.js"></script>
 	<script type="text/javascript" src="js/watch.js"></script>
 	
 	
@@ -72,8 +71,6 @@
 	<h3>Your Roundfile:</h3>
 	<!-- output code goes here -->	
 	<pre id="preArea"></pre>
-	
-	<button class="btn btn-success" id="clipboardButton"><i class="icon-file"></i> Copy to clipboard</button>
 	
 	
 	<script type="text/javascript">
@@ -204,17 +201,8 @@
 	  }
 
 	
-	$('#morebutton').click(function(){
-		// because flash sucks, we have to remove the zclip-function before moving the button and add it again afterwards -.-
-		$('#clipboardButton').zclip('remove');
-		
+	$('#morebutton').click(function(){	
 		createCat();
-
-		$('#clipboardButton').zclip({
-			path:'js/zclip/ZeroClipboard.swf',
-			copy:function(){return $('#preArea').text();},
-		});
-
 	});	
 		
 	// check if an image exists in the answers/<roundnumber>/ directory
@@ -231,14 +219,6 @@
 	createCat();
   
 	
-	// function behind clipboard button
-	$('#clipboardButton').zclip({
-		path:'js/zclip/ZeroClipboard.swf',
-		copy:function(){return $('#preArea').text();},
-	});
-
-
-
 	$('.questionInput').keyup(function(){
 		checkImage(this);
 	});
