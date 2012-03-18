@@ -1,0 +1,145 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+	<title>Jeopardy Tools</title>
+	<link href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/themes/base/jquery-ui.css" rel="stylesheet" type="text/css"/>
+	<link rel="stylesheet" type="text/css" href="css/bootstrap.css" />	
+</head>
+
+<body>
+    <div class="navbar navbar-fixed-top">
+      <div class="navbar-inner">
+        <div class="container">
+
+          <a class="brand" href="#">Jeopardy Tools</a>
+
+            <ul class="nav" style="float:right">
+            	<li class="active"><a href="http://creativecommons.org/licenses/by-nc-sa/2.0/de/">2012 // CC BY NC SA</a></li>
+            </ul>
+        </div>
+      </div>
+    </div>
+
+<div class="container" style="margin-top: 45px">
+
+
+    <div class="container-fluid">
+    <div class="row-fluid">
+    <div class="span2">
+    <!--Sidebar content-->
+    <div style="padding: 8px 0;" class="well">
+		  <ul class="nav nav-list">
+		  <li class="nav-header">
+			  Navigation
+		  </li>
+		  <li>
+		  	<a href="index.html"><i class="icon-home"></i> Home</a>
+		  </li>
+		   <li>
+			<a href="create.html"><i class="icon-pencil"></i> Create</a>
+		  </li>
+		  <li class="active">
+		  	<a href="javascript:void(0);" id="lib"><i class="icon-book"></i> Library</a>  	
+		  </li>
+		  <li><a href="https://github.com/pylight/jeopardy-tools" target="_blank"><i class="icon-star"></i> Github</a></li>
+		  </ul>
+		</div>    
+    </div>
+    
+    <div id="content" class="span10">
+		<!-- website content -->
+		
+  		<div class="alert alert-info"><h1>Overview</h1>
+			<span id="loadingInfo"><i>Getting Roundfiles...</i></span>
+			<ul class="roundFiles" style="list-style-type:none; margin: 0; padding: 0;"></ul>
+		</div>
+    
+		</div>
+    
+    
+		</div>
+		</div>
+	</div>
+
+		<!-- javascript libs -->
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+		<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.18/jquery-ui.min.js"></script>
+		<script src="js/bootstrap.js"></script>
+		<script src="js/shadowbox/shadowbox.js"></script>
+		<link rel="stylesheet" type="text/css" href="js/shadowbox/shadowbox.css">
+		
+		<script>
+		$(document).ready(function(){
+			
+			// init dokumentation tabs
+			$('.tabs a:last').tab('show');
+			
+			// sidebar: library link tooltip
+			$('#lib').tooltip({placement: 'right'});
+			
+			// check if the roundfile exists
+			function urlExists(url)
+			{
+				var http = new XMLHttpRequest();
+				http.open('HEAD', url, false);
+				http.send();
+				return http.status!=404;
+			}
+			
+			// returns a string containing all categories of a roundfile
+			// separated by commas
+			function getCategories(file){
+				var catInfos = "";
+				var catCount = 0;
+				var filePath = "answers/" + file;
+				
+				$.ajax({
+						url: filePath,
+						type: 'get',
+						dataType: 'html',
+						async: false,
+						success: function(data) {				
+				
+						var lines = data.split("\n");
+						
+						for (var i = 0; i < lines.length; i++)
+						{
+								if (lines[i] == "")
+									continue;
+							
+								if(! lines[i].substr(0, 1).match(/[0-9]/g)){
+									catCount++;
+									
+									if (catInfos != "")
+										catInfos += ', ';
+									
+										catInfos += '<a href="showFile.html?file=' + file + '#answers' + catCount + '">' + lines[i] + '</a>';							
+								}
+						}
+					}
+				});		
+				return catInfos;
+			}
+			
+			// check for availiable files
+			var fileCount = 0;
+			for (var i = 1; urlExists("answers/" + i + ".jrf"); i++)
+			{
+				catInfos = getCategories(i + ".jrf");
+				
+				$('.roundFiles').append('<li><a href="showFile.html?file=' + i + '.jrf' + '"><i class="icon-arrow-right"></i> ' + i + '.jrf</a> (' + catInfos + ')</li>');
+				fileCount++;
+			}
+			
+			if(fileCount)
+				$("#loadingInfo").html("Please choose a Roundfile:"); 
+			else
+				$("#loadingInfo").html("No files found. Please create roundfiles in a subfolder called 'answers'. The Roundfiles and media-folders must be numeric (e.g. an answers/1.jrf Roundfile and a answers/1 subfolder).");
+		});		
+		</script>
+		
+</body>
+
+</html>
+
