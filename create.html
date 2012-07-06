@@ -58,11 +58,10 @@
 	Please fill out the fields below. Comments are <i>optional</i> and will not be displayed in the game (sneaky trick for solutions).<br />
 	If you want to add a new category, click on the "moar cats"-button below.
 
-	<div>
+	<br /><br />
 	<span class="label">Roundfile name:</span> <input id="roundfileName" class="input-mini" value="1"/>.jrf <span style="font-size: 10px; color: #ccc;">(influences folder name for images)</span>
-	</div>
-	<br/>
 	
+	<div style="height: 35px;"><span id="infoMessage" style="display: none;"></span></div>
 	<hr />
 	<div id="formArea"></div>
 	<a class="btn" href="javascript:void(0)" id="morebutton">moar cats</a>
@@ -88,8 +87,11 @@
 				{
 					if (i == 0)
 					{
-						htmlCode += '<input type="text" placeholder="Category name #' + catNumber + '" name="' + catNumber + '_name" style="width: 635px;" /><br />';
+						htmlCode += '<input type="text" placeholder="Category name #' + catNumber + '" name="' + catNumber + '_name" style="width: 375px;" /> ';
+						htmlCode += '<input type="text" placeholder="(optional) image-subfoldername" name="' + catNumber + '_folder" class="foldername" style="width: 200px;" /><br />';
+						
 						preCode += '<span id="' + catNumber + '_name-out"></span>\n';
+						
 					}
 					else
 					{
@@ -100,9 +102,9 @@
 						var cOutSelector = '#' + cName + '-out';
 						var curSuffix = catNumber + '_' + i;
 						
-						htmlCode += '<span class="input-append" style="float:left; margin-right: 10px;"><input type="text" style="width: 250px;" class="span2 questionInput" id="prependedAppendedInput" placeholder="question #' + i + '" name="' + qName + '" /><span class="add-on"><input class="imgbox" type="checkbox" id="imgbox_' + curSuffix + '" />img</span><span class="add-on"><input class="djbox" type="checkbox" id="djbox_' + curSuffix + '" /> dj  </span> </span> <input placeholder="comment #' + i +'" style="width: 250px;" class="commentinput input disabled" type="text" placeholder="comment #' + i +'" name="' + cName + '" /><div  style="clear:both;"></div>';					
+						htmlCode += '<span class="input-append" style="float:left; margin-right: 10px;"><input type="text" style="width: 250px;" class="span2 questionInput" id="prependedAppendedInput" placeholder="question #' + i + '" name="' + qName + '" /><span class="add-on" title="Use an image?"><input class="imgbox" type="checkbox" id="imgbox_' + curSuffix + '" /> <label style ="padding:0;margin:0;display:inline-table;" for="imgbox_' + curSuffix + '"><i class="icon-picture"></i></label></span><span class="add-on" title="Double jeopardy question?"><input class="djbox" type="checkbox" id="djbox_' + curSuffix + '" /> <label style ="padding:0;margin:0;display:inline-table; color: grey;" for="djbox_' + curSuffix + '">dj</label>  </span> </span> <input placeholder="(optional) comment #' + i +'" style="width: 250px;" class="commentinput input disabled" type="text" placeholder="comment #' + i +'" name="' + cName + '" /><div  style="clear:both;"></div>';					
 						
-						preCode += i + ': <span id="' + catNumber + '_' + i + '-out"></span> <span class="comment" id="' + catNumber + '_' + i + '_comment-out"></span>\n';
+						preCode += i + ': <span class="' + catNumber + '_folder-out" id="' + catNumber + '_' + i + '_folder-out" style="display:none;"></span><span id="' + catNumber + '_' + i + '-out"></span> <span class="comment" id="' + catNumber + '_' + i + '_comment-out"></span>\n';
 					}
 				}			
 			
@@ -120,6 +122,18 @@
 				var outid = '#' + $(this).attr('name') + '-out';
 				watch.add($(this).attr('name'), function(value) { $(outid).text(value); });
 			});
+			
+			watch.add(catId + '_folder', function(value) { 
+				if(value.length > 0 &&  !value.match(/\/$/))
+				{
+					value = value + '/';
+				}
+				
+				$('.' + catId + '_folder-out').text(value); 
+				
+				
+				});
+			
 		}			  
 		
 
@@ -128,27 +142,87 @@
 			var ids = $(e).attr("name");
 			var input = $(e).val();
 			
-			if (!input || input == "")
+			if (!input || input == "") {
+				$('#preview_' + ids).remove();
 				return;
+			}
 
-			var imgUrl = 'answers/' + roundNumber + '/' +  input;
+			var folderPrefix = $('#' + ids + '_folder-out').text();
+			var imgUrl = 'answers/' + roundNumber + '/' + folderPrefix +  input;
 		
-				if ( $('#imgbox_' + ids).attr("checked") && urlExists(imgUrl))
+				if ( $('#imgbox_' + ids).attr("checked"))
 				{
-					if($('#preview_' + ids).length == 0)
-					{				
-						var imageCode = '<a rel="shadowbox" href="'+ imgUrl +'" target="_blank"><img class="imgPreview" id="preview_'+ ids + '" style="margin-right: 10px; float: left; max-heigth: 100px; max-width: 100px;" src="' + imgUrl + '" alt="" border="0" /></a>';
-						
-						$('.questionInput[name=' + ids + ']').before(imageCode);
-												
-						Shadowbox.setup();
+					if (imgUrl.indexOf(".") > -1 && urlExists(imgUrl))
+					{
+						if ($('#preview_' + ids).length == 0)
+						{				
+							var imageCode = '<a rel="shadowbox" href="'+ imgUrl +'" target="_blank"><img class="imgPreview" id="preview_'+ ids + '" style="margin-right: 10px; float: left; max-heigth: 100px; max-width: 100px;" src="' + imgUrl + '" alt="" border="0" /></a>';
+							
+							$('.questionInput[name=' + ids + ']').before(imageCode);
+							showImageSuccess(input);						
+							Shadowbox.setup();
+						}
 					}
+					else if (imgUrl.indexOf(".") == -1)
+					{
+						// remove preview image
+						$('#preview_' + ids).remove();
+						
+						// if no filename was given, check for the 3 most popular ones
+						if (!imgUrl.match(/.jpg$/) && !imgUrl.match(/.png$/) && !imgUrl.match(/.gif$/)) {
+							var outId = '#' + ids + '-out';
+							
+							if (urlExists(imgUrl + '.jpg'))
+							{
+								$(e).val(input + '.jpg');
+								$(outId).text(input + '.jpg');								
+								checkImage(e);
+							}
+							else if (urlExists(imgUrl + '.png'))
+							{
+								$(e).val(input + '.png');
+								$(outId).text(input + '.png');								
+								checkImage(e);
+							}		
+							else if (urlExists(imgUrl + '.gif'))
+							{
+								$(e).val(input + '.gif');
+								$(outId).text(input + '.gif');								
+								checkImage(e);
+							}
+							else {
+									showImageError();
+							}
+						
+						
+						}
+						
+					}
+					else {
+							showImageError();
+					}
+					
+					
 				}
 				else
 				{
 					$('#preview_' + ids).remove();
 				}
 		}
+
+		function showImageError() {
+			$('#infoMessage').text("Image not found - are filename, foldername and roundfilename correct?");
+			$('#infoMessage').css('color', 'red');
+			$('#infoMessage').show();
+			$('#infoMessage').fadeOut(5000);	
+		}
+		function showImageSuccess(image) {
+			$('#infoMessage').text("Success - Image " + image + " found. :)");
+			$('#infoMessage').css('color', 'darkgreen');
+			$('#infoMessage').show();
+			$('#infoMessage').fadeOut(5000);	
+		}
+
 
 		function djBind(){
 		$('.djbox').unbind('click.boxEvent');
@@ -179,12 +253,24 @@
 			var boxId = $(this).attr('id');
 			var idList = boxId.split('_');
 			var entryId = idList[1] + '_' + idList[2] + '-out';
+			var folderId = idList[1] + '_' + idList[2] + '_folder-out';
 			var boxAddId = 'img' + entryId + '-added';
 			
 			if ($(this).attr('checked'))
-				$('#' + entryId).before('<span id="' + boxAddId + '">[img]</span>');
+			{
+				$('#' + folderId).before('<span id="' + boxAddId + '">[img]</span>');
+				var questionId = idList[1] + '_' + idList[2];
+				$('[name=' + questionId + ']').attr("placeholder", "image filename #" + idList[2]);
+				$('#' + folderId).show();				
+			}
 			else
+			{
 				$('#' + boxAddId).remove();
+				var questionId = idList[1] + '_' + idList[2];
+				$('[name=' + questionId + ']').attr("placeholder", "question #" + idList[2]);
+				$('#' + folderId).hide();				
+			}
+
 
 			var element = '.questionInput[name=' + idList[1] + '_' + idList[2] + ']';
 			checkImage(element);
@@ -198,6 +284,7 @@
 			addWatch(curCat);
 			djBind();
 			imgBind();
+			bindFolderChange();
 	  }
 
 	
@@ -229,8 +316,7 @@
 	
 	$('.questionInput').keyup(function(){
 		var element = $(this);
-		if (element.val())
-			elapsedTime = setTimeout(function(){doneTyping(element)}, deadline);
+		elapsedTime = setTimeout(function(){doneTyping(element)}, deadline);
 	});	
 
 	$('.questionInput').keydown(function(){
@@ -244,10 +330,30 @@
 		oldVal = element.val();
 
 		// user finished typing for some time, 
-		// so we'll check if the image is valid
+		// => check if the image is valid
 		checkImage(element);
 	}
 	
+	
+	function bindFolderChange() {
+		$('.foldername').unbind('focusout');
+		
+		$('.foldername').bind('focusout', function() {
+			var folderName = $(this).attr('name');
+			
+			if (folderName.length > 0) {
+				// recheck imageurls for the current directory
+				var catId = folderName.split('_')[0];
+				
+				for (i = 100; i <= 500; i+=100) {
+					checkImage($('[name=' + catId + '_' + i + ']'));
+				}
+				 
+				
+			}
+			
+		});
+	}
 	
 		
 	});
