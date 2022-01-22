@@ -6,4 +6,4 @@ https://github.com/chlange/jeopardy
 
 See the thingy in action
 =========================
-Although it's intended for local use, you can also see it in action on github: http://pylight.github.com/jeopardy-tools
+Although it's intended for local use, you can also see it in action on github: http://pylight.github.io/jeopardy-tools
